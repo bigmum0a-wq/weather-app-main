@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta property="og:title" content="Weather app main">
+    <meta property="og:description" content="Create a weather app main">
+    <meta name="description" content="A responsive weather app page built with HTML and CSS, featuring a modern layout and responsive cards.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://bigmum0a-wq.github.io/">
+
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
+
+    <title>Frontend Mentor | Weather app main page challenge</title>
+</head>
+
+<body>
+
+    <!-- Global application header -->
+    <header>
+
+        <!-- Application identity -->
+        <div class="logo">
+            <button
+                type="button"
+                aria-label="Page's logo"
+                class="logo-btn"
+            >
+                <img src="assets/images/logo.svg" alt="Logo image">
+            </button>
+        </div>
+
+        <!-- Global unit controls -->
+        <div class="units-dropdown">
+
+            <button
+                type="button"
+                id="units-toggle-btn"
+                class="units-btn togglebtn"
+                aria-expanded="false"
+                aria-controls="units-menu"
+            >
+                <img
+                    src="./assets/images/icon-units.svg"
+                    alt="Units icon"
+                >
+
+                <span>Units</span>
+
+                <img
+                    src="./assets/images/icon-dropdown.svg"
+                    alt="Open units menu"
+                    class="action"
+                >
+            </button>
+
+            <!-- Units selection panel -->
+            <div
+                id="units-menu"
+                class="menu units-menu hidden"
+            >
+
+                <!-- Quick action -->
+                <button
+                    type="button"
+                    class="switch-all-btn"
+                >
+                    Switch to Imperial
+                </button>
+
+                <!-- Temperature units -->
+                <div class="unit-group">
+
+                    <span class="group-label">Temperature</span>
+
+                    <button
+                        type="button"
+                        class="unit-option selected"
+                        data-unit="temp"
+                        data-value="celsius"
+                        data-symbol="°"
+                    >
+                        <span>Celsius (°C)</span>
+
+                        <img
+                            src="assets/images/icon-checkmark.svg"
+                            alt="Checkmark icon"
+                            class="checkmark"
+                        >
+                    </button>
+
+                    <button
+                        type="button"
+                        class="unit-option"
+                        data-unit="temp"
+                        data-value="fahrenheit"
+                        data-symbol="°"
+                    >
+                        <span>Fahrenheit (°F)</span>
+
+                        <img
+                            src="assets/images/icon-checkmark.svg"
+                            alt="Checkmark icon"
+                            class="checkmark"
+                        >
+                    </button>
+
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Wind speed units -->
+                <div class="unit-group">
+
+                    <span class="group-label">Wind Speed</span>
+
+                    <button
+                        type="button"
+                        class="unit-option selected"
+                        data-unit="wind"
+                        data-value="kmh"
+                        data-symbol="km/h"
+                    >
+                        <span>km/h</span>
+
+                        <img
+                            src="assets/images/icon-checkmark.svg"
+                            alt="Checkmark icon"
+                            class="checkmark"
+                        >
+                    </button>
+
+                    <button
+                        type="button"
+                        class="unit-option"
+                        data-unit="wind"
+                        data-value="mph"
+                        data-symbol="mph"
+                    >
+                        <span>mph</span>
+
+                        <img
+                            src="assets/images/icon-checkmark.svg"
+                            alt="Checkmark icon"
+                            class="checkmark"
+                        >
+                    </button>
+
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Precipitation units -->
+                <div class="unit-group">
+
+                    <span class="group-label">Precipitation</span>
+
+                    <button
+                        type="button"
+                        class="unit-option selected"
+                        data-unit="precip"
+                        data-value="mm"
+                        data-symbol="mm"
+
+                    >
+                        <span>Millimeters (mm)</span>
+
+                        <img
+                            src="assets/images/icon-checkmark.svg"
+                            alt="Checkmark icon"
+                            class="checkmark"
+                        >
+                    </button>
+
+                    <button
+                        type="button"
+                        class="unit-option"
+                        data-unit="precip"
+                        data-value="in"
+                        data-symbol="in"
+
+                    >
+                        <span>Inches (in)</span>
+
+                        <img
+                            src="assets/images/icon-checkmark.svg"
+                            alt="Checkmark icon"
+                            class="checkmark"
+                        >
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <main>
+
+        <!-- Page introduction and location search -->
+        <section
+            class="main-header"
+            aria-labelledby="page-title"
+        >
+
+            <div class="page-title">
+                <h1 id="page-title">How's the sky looking today?</h1>
+            </div>
+
+            <form
+                class="search"
+                id="search-form"
+            >
+                <div class="input-card">
+                    <img src="assets/images/icon-search.svg" alt="Search icon">
+                    <input
+                        type="search"
+                        id="search-input"
+                        placeholder="Search for a city, e.g., New York"
+                        aria-label="Search location"
+                    >
+                </div>
+                <button
+                    type="submit"
+                    aria-label="Search button"
+                    class="search-btn"
+                >
+                    Search
+                </button>
+            </form>
+
+            <!-- Dynamically populated city search results -->
+            <div class="city-list overview " hidden >
+                <div class="search-status" hidden><img src="assets/images/icon-loading.svg" alt=""> Search in progress ...</div>
+                <ul>
+
+                </ul>
+            </div>
+
+        </section>
+
+
+        <!-- Main weather layout -->
+        <div class="main-body">
+
+            <!-- Left side: current and forecast information -->
+            <section
+                class="weather-info"
+                aria-label="Weather information"
+            >
+
+                <!-- Current weather -->
+                <section
+                    class="weather-preview"
+                    aria-label="Current weather"
+                >
+
+                    <div class="city-info">
+                        <span id="city-info" class="w-info city"> <span id="current-city">-</span><span id="current-country">-</span> </span>
+                        <span id="date-info" class="w-info date">-</span>
+                    </div>
+                    <div class="sun-sun">
+                        <img src="assets/images/icon-sunny.webp" alt="sun icon">
+                    </div>
+
+                    <div class="temperature">
+                        <span id="preview-temperature" class="w-info">-</span>
+                    </div>
+
+                    <div class="loading-msg" hidden>
+                        <div class="loadingsvg">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <p>Loading ...</p>
+                    </div>
+
+                </section>
+
+
+                <!-- Additional current-weather measurements -->
+                <section
+                    class="extra-info"
+                    aria-label="Current weather details"
+                >
+
+                    <article class="extra-card">
+                        <h2>Feels like</h2>
+                        <span id="extra-temperature">-</span>
+                    </article>
+
+                    <article class="extra-card">
+                        <h2>Humidity</h2>
+                        <span id="hmdt-estimation">-</span>
+                    </article>
+
+                    <article class="extra-card">
+                        <h2>Wind</h2>
+                        <span id="wind-estimation">-</span>
+                    </article>
+
+                    <article class="extra-card">
+                        <h2>Precipitation</h2>
+                        <span id="prtt-estimation">-</span>
+                    </article>
+
+                </section>
+
+
+                <!-- Seven-day forecast -->
+                <section
+                    class="daily-forecast"
+                    aria-labelledby="daily-forecast-title"
+                >
+
+                    <h2 id="daily-forecast-title">Daily forecast</h2>
+
+                    <div class="daily">
+
+                        <article class="daily-card">
+                            <h3>-</h3>
+                            <img class="daily-icon" src="" alt="Weather icon">
+                            <span>
+                                <span>-</span>
+                                <span>-</span>
+                            </span>
+                        </article>
+
+                        <article class="daily-card">
+                            <h3>-</h3>
+                            <img class="daily-icon" src="" alt="Weather icon">
+                            <span>
+                                <span>-</span>
+                                <span>-</span>
+                            </span>
+                        </article>
+
+                        <article class="daily-card">
+                            <h3>-</h3>
+                            <img class="daily-icon" src="" alt="Weather icon">
+                            <span>
+                                <span>-</span>
+                                <span>-</span>
+                            </span>
+                        </article>
+
+                        <article class="daily-card">
+                            <h3>-</h3>
+                            <img class="daily-icon" src="" alt="Weather icon">
+                            <span>
+                                <span>-</span>
+                                <span>-</span>
+                            </span>
+                        </article>
+
+                        <article class="daily-card">
+                            <h3>-</h3>
+                            <img class="daily-icon" src="" alt="Weather icon">
+                            <span>
+                                <span>-</span>
+                                <span>-</span>
+                            </span>
+                        </article>
+
+                        <article class="daily-card">
+                            <h3>-</h3>
+                            <img class="daily-icon" src="" alt="Weather icon">
+                            <span>
+                                <span>-</span>
+                                <span>-</span>
+                            </span>
+                        </article>
+
+                        <article class="daily-card">
+                            <h3>-</h3>
+                            <img class="daily-icon" src="" alt="Weather icon">
+                            <span>
+                                <span>-</span>
+                                <span>-</span>
+                            </span>
+                        </article>
+
+                    </div>
+
+                </section>
+
+            </section>
+
+
+            <!-- Right side: hourly forecast -->
+            <section
+                class="hourly-forecast"
+                aria-labelledby="hourly-forecast-title"
+            >
+
+                <!-- Hourly forecast controls -->
+                <div class="daily-lis-container">
+
+                    <h2 id="hourly-forecast-title">Hourly forecast</h2>
+
+                    <button
+                        id="hourly-toggle-btn"
+                        class="hourView-btn togglebtn"
+                        type="button"
+                        aria-expanded="false"
+                        aria-controls="day-select-list"
+                    >
+                        <span id="daily-overview">-</span>
+
+                        <img
+                            src="./assets/images/icon-dropdown.svg"
+                            alt="Open day selection"
+                            class="action"
+                        >
+                    </button>
+
+                    <!-- Day selection dropdown -->
+                    <div
+                        id="day-select-list"
+                        class="day-select-list hidden"
+                        
+                    >
+                        <button
+                            type="button"
+                            class="day-option selected"
+                            data-day="monday"
+                            data-clas="day"
+                        >
+                            Monday
+                        </button>
+
+                        <button
+                            type="button"
+                            class="day-option"
+                            data-day="tuesday"
+                            data-clas="day"
+                        >
+                            Tuesday
+                        </button>
+
+                        <button
+                            type="button"
+                            class="day-option"
+                            data-day="wednesday"
+                            data-clas="day"
+                        >
+                            Wednesday
+                        </button>
+
+                        <button
+                            type="button"
+                            class="day-option"
+                            data-day="thursday"
+                            data-clas="day"
+                        >
+                            Thursday
+                        </button>
+
+                        <button
+                            type="button"
+                            class="day-option"
+                            data-day="friday"
+                            data-clas="day"
+                        >
+                            Friday
+                        </button>
+
+                        <button
+                            type="button"
+                            class="day-option"
+                            data-day="saturday"
+                            data-clas="day"
+                        >
+                            Saturday
+                        </button>
+
+                        <button
+                            type="button"
+                            class="day-option"
+                            data-day="sunday"
+                            data-clas="day"
+                        >
+                            Sunday
+                        </button>
+                    </div>
+
+                </div>
+
+
+                <!-- Hourly forecast data -->
+                <div class="hourly-info">
+
+                    <article class="hourly-card">
+                        <img class="hourly-icon" src="" alt="Weather icon">
+
+                        <span class="hour temp">
+                            <span>-</span>
+                            <span>-</span>
+                        </span>
+                    </article>
+
+                    <article class="hourly-card">
+                        <img class="hourly-icon" src="" alt="Weather icon">
+
+                        <span class="hour temp">
+                            <span>-</span>
+                            <span>-</span>
+                        </span>
+                    </article>
+
+                    <article class="hourly-card">
+                        <img class="hourly-icon" src="" alt="Weather icon">
+
+                        <span class="hour temp">
+                            <span>-</span>
+                            <span>-</span>
+                        </span>
+                    </article>
+
+                    <article class="hourly-card">
+                        <img class="hourly-icon" src="" alt="Weather icon">
+
+                        <span class="hour temp">
+                            <span>-</span>
+                            <span>-</span>
+                        </span>
+                    </article>
+
+                    <article class="hourly-card">
+                        <img class="hourly-icon" src="" alt="Weather icon">
+
+                        <span class="hour temp">
+                            <span>-</span>
+                            <span>-</span>
+                        </span>
+                    </article>
+
+                    <article class="hourly-card">
+                        <img class="hourly-icon" src="" alt="Weather icon">
+
+                        <span class="hour temp">
+                            <span>-</span>
+                            <span>-</span>
+                        </span>
+                    </article>
+
+                    <article class="hourly-card">
+                        <img class="hourly-icon" src="" alt="Weather icon">
+
+                        <span class="hour temp">
+                            <span>-</span>
+                            <span>-</span>
+                        </span>
+                    </article>
+
+                    <article class="hourly-card">
+                        <img class="hourly-icon" src="" alt="Weather icon">
+
+                        <span class="hour temp">
+                            <span>-</span>
+                            <span>-</span>
+                        </span>
+                    </article>
+
+                    <article class="hourly-card">
+                        <img class="hourly-icon" src="" alt="Weather icon">
+
+                        <span class="hour temp">
+                            <span>-</span>
+                            <span>-</span>
+                        </span>
+                    </article>
+
+                    <article class="hourly-card">
+                        <img class="hourly-icon" src="" alt="Weather icon">
+
+                        <span class="hour temp">
+                            <span>-</span>
+                            <span>-</span>
+                        </span>
+                    </article>
+
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <section class="no-result" hidden>                     
+        <h2>No search result found!</h2>
+        </section>
+
+        <section class="error-state" hidden>                   
+            <img src="assets/images/icon-error.svg" alt="">
+            <h2>Something went wrong</h2>
+            <p>We couldn't connect to the server (API error). Please try again in a few moments.</p>
+            <button type="button" class="retry-btn">
+                <img src="assets/images/icon-retry.svg" alt="">
+                <span>Retry</span>
+            </button>
+        </section>
+
+    </main>
+
+
+    <!-- <script src="assets/js/script.js"></script> -->
+    <script src="assets/js/js.js"></script>
+
+</body>
+
+</html>
