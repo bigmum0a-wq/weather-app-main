@@ -552,6 +552,26 @@ button { cursor: pointer; }
   background: var(--neutral-800);
 
 }
+
+footer{
+    margin-top: 40px;
+    padding: 10px;
+    color: rgba(174, 188, 219, 0.692);
+    font-weight: 700;
+    text-align: center;
+}
+
+.attribution a{
+    color:inherit;
+    text-decoration:underline;
+
+}
+
+.attribution a:hover,
+.attribution a:focus{
+    opacity:0.8;
+}
+
 /* =========================================================
    MOBILE — 370px to 760px
    ========================================================= */
@@ -675,6 +695,15 @@ button { cursor: pointer; }
     height: 10rem;
     padding: .7rem;
   }
+
+  .daily-forecast{
+    margin-bottom: 2rem;
+  }
+
+  .daily-forecast h2{
+    margin-bottom: 1.5rem;
+  }
+  
   .daily-card h3 { font-size: .9rem; }
   .daily-card > :nth-child(3) span { font-size: .9rem; }
 
