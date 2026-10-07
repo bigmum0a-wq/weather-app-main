@@ -1,19 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-US">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <meta property="og:title" content="Weather app main">
     <meta property="og:description" content="Create a weather app main">
     <meta name="description" content="A responsive weather app page built with HTML and CSS, featuring a modern layout and responsive cards.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://bigmum0a-wq.github.io/">
-
+    <meta property="og:url" content="https://bigmum0a-wq.github.io/weather-app-main/">
     <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
-
     <title>Frontend Mentor | Weather app main page challenge</title>
 </head>
 
@@ -198,6 +195,20 @@
 
         </div>
 
+        <div class="location-denied" role="alert" hidden>
+            <div class="alert-body">
+                <!-- Icon SVG: Location Off / Denied -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a8 8 0 0 0-8 8c0 5.25 7 11.25 7.72 11.85a1 1 0 0 0 1.28 0c.26-.21 2.21-1.78 4.38-4.1"/>
+                <line x1="2" y1="2" x2="22" y2="22"/>
+                <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <strong>Location unavailable</strong>
+                <p>Enable location access in your browser, or search for a city above.</p>
+            </div>
+            <button type="button" class="alert-close" aria-label="Close alert">×</button>
+        </div>
+
     </header>
 
 
@@ -237,7 +248,11 @@
 
             <!-- Dynamically populated city search results -->
             <div class="city-list overview " hidden >
-                <div class="search-status" hidden><img src="assets/images/icon-loading.svg" alt=""> Search in progress ...</div>
+
+                <div class="search-status" hidden>
+                    <img src="assets/images/icon-loading.svg" alt=""> 
+                    Search in progress ...
+                </div>
                 <ul>
 
                 </ul>
@@ -427,7 +442,7 @@
                         class="day-select-list hidden"
                         
                     >
-                        <button
+                        <!-- <button
                             type="button"
                             class="day-option selected"
                             data-day="monday"
@@ -488,7 +503,7 @@
                             data-clas="day"
                         >
                             Sunday
-                        </button>
+                        </button> -->
                     </div>
 
                 </div>
@@ -598,6 +613,8 @@
         <h2>No search result found!</h2>
         </section>
 
+
+
         <section class="error-state" hidden>                   
             <img src="assets/images/icon-error.svg" alt="">
             <h2>Something went wrong</h2>
@@ -615,8 +632,6 @@
         Coded by <a href="https://www.frontendmentor.io/profile/bigmum0a-wq">Espoir</a>.
     </footer>
 
-
-    <!-- <script src="assets/js/script.js"></script> -->
     <script src="assets/js/js.js"></script>
 
 </body>

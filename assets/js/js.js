@@ -1,25 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   /* =========================================================
-     STATE — la mémoire de l'appli
+     STATE — application memory
      ========================================================= */
   const state = {
     location: null,       // { city, country, latitude, longitude }
-    weather: null,        // { week, daily, now }
+    weather: null,        // { daily, now }
     selectedDay: null,    // 'monday' | 'tuesday' | ...
     units: { temp: 'celsius', wind: 'kmh', precip: 'mm' },
-    ui: 'normal',         // 'normal' | 'loading' | 'search-progress' | 'no-result' | 'error'
     lastAction: null,     // { type: 'search', query } | { type: 'units' } | { type: 'geoloc' } | null
   };
 
   const PRECIP_API = { mm: 'mm', in: 'inch' };
 
   /* =========================================================
-     HELPERS DE DATE
+     DATE HELPERS
      ========================================================= */
-  function getTodayIndexInWeek() {
-    return (new Date().getDay() + 6) % 7;   // 0 = lundi … 6 = dimanche
-  }
   function getTodayKey() {
     return new Date()
       .toLocaleDateString('en-US', { weekday: 'long' })
@@ -49,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =========================================================
-     MAPPING WMO → icône
+     WMO CODE → ICON MAPPING
      ========================================================= */
   function iconFromCode(code) {
     if (code === 0)                 return 'icon-sunny.webp';
@@ -66,74 +62,123 @@ document.addEventListener('DOMContentLoaded', () => {
     return 'icon-sunny.webp';
   }
 
-  /* =========================================================
-     DOM CACHÉ
-     ========================================================= */
-  const mainHeader    = document.querySelector('.main-header');
-  const mainBody      = document.querySelector('.main-body');
-  const cityListBox   = document.querySelector('.city-list');
-  const cityListUl    = cityListBox.querySelector('ul');
-  const searchStatus  = cityListBox.querySelector('.search-status');
-  const loadingMsg    = document.querySelector('.loading-msg');
-  const noResultBox   = document.querySelector('.no-result');
-  const errorStateBox = document.querySelector('.error-state');
+  /* Human-readable alt text derived from an icon filename */
+  function altFromIcon(icon) {
+    const name = icon.replace('icon-', '').replace('.webp', '');
+    const map = {
+      'sunny':         'Sunny',
+      'partly-cloudy': 'Partly cloudy',
+      'overcast':      'Overcast',
+      'fog':           'Fog',
+      'drizzle':       'Drizzle',
+      'rain':          'Rain',
+      'snow':          'Snow',
+      'storm':         'Storm',
+    };
+    return map[name] || 'Weather icon';
+  }
 
   /* =========================================================
-     GESTION DES ÉTATS UI
+     CACHED DOM
+     ========================================================= */
+  const mainBody          = document.querySelector('.main-body');
+  const cityListBox       = document.querySelector('.city-list');
+  const cityListUl        = cityListBox.querySelector('ul');
+  const searchStatus      = cityListBox.querySelector('.search-status');
+  const loadingMsg        = document.querySelector('.loading-msg');
+  const noResultBox       = document.querySelector('.no-result');
+  const errorStateBox     = document.querySelector('.error-state');
+  const locationDeniedBox = document.querySelector('.location-denied');
+  const daySelectList     = document.getElementById('day-select-list');
+
+  let locationAlertTimer = null;
+
+  /* =========================================================
+     UI STATE MANAGEMENT
      ========================================================= */
   function showState(name) {
-    state.ui = name;
+    if (name !== 'location-denied' && locationAlertTimer) {
+      clearTimeout(locationAlertTimer);
+      locationAlertTimer = null;
+    }
 
-    // Messages spécifiques
-    loadingMsg.hidden    = name !== 'loading';
-    searchStatus.hidden  = name !== 'search-progress';
-    noResultBox.hidden   = name !== 'no-result';
-    errorStateBox.hidden = name !== 'error';
+    loadingMsg.hidden        = name !== 'loading';
+    searchStatus.hidden      = name !== 'search-progress';
+    noResultBox.hidden       = name !== 'no-result';
+    errorStateBox.hidden     = name !== 'error';
+    locationDeniedBox.hidden = name !== 'location-denied';
 
-    // Header (logo + units) : toujours visible
-    // .main-header (titre + form) : caché en 'error'
-    mainHeader.hidden = (name === 'error');
-
-    // .main-body : caché en 'no-result' et 'error'
+    // .main-header (title + form) stays visible in every state.
+    // .main-body is hidden in 'no-result' and 'error'.
     mainBody.hidden = (name === 'no-result' || name === 'error');
 
-    // .city-list : visible uniquement en 'search-progress'
-    // (les suggestions au fil de la frappe le réaffichent indépendamment)
+    setContentEmpty(name === 'location-denied');
+
     cityListBox.hidden = (name !== 'search-progress');
-
-    //Search button desabled state
     setSearchDisabled(name === 'search-progress');
-
-    // Squelette
     mainBody.classList.toggle('is-loading', name === 'loading');
 
     if (name === 'normal') {
       updateUnitsAvailability();
     }
+
+    if (name === 'location-denied') {
+      locationAlertTimer = setTimeout(() => {
+        locationAlertTimer = null;
+        showState('normal');
+      }, 6000);
+    }
   }
 
   /* =========================================================
-     UNITÉS — disponibilité
+     UNITS — availability
      ========================================================= */
   function setUnitsControlsDisabled(disabled) {
     document.querySelectorAll('.unit-option').forEach(btn => btn.disabled = disabled);
     document.querySelector('.switch-all-btn').disabled = disabled;
-    
   }
   function updateUnitsAvailability() {
     setUnitsControlsDisabled(!state.weather);
   }
-
-    function setSearchDisabled(disabled) {
+  function setSearchDisabled(disabled) {
     document.querySelector('.search-btn').disabled = disabled;
-    }
+  }
 
   /* =========================================================
-     NORMALISATION
+     EMPTY CONTENT — wipe the UI when no data is available
+     ========================================================= */
+  function setContentEmpty(empty) {
+    mainBody.classList.toggle('is-empty', empty);
+    if (!empty) return;
+
+    document.getElementById('current-city').textContent        = '';
+    document.getElementById('current-country').textContent     = '';
+    document.getElementById('date-info').textContent           = '';
+    document.getElementById('preview-temperature').textContent = '';
+    document.getElementById('extra-temperature').textContent   = '';
+    document.getElementById('hmdt-estimation').textContent     = '';
+    document.getElementById('wind-estimation').textContent     = '';
+    document.getElementById('prtt-estimation').textContent     = '';
+    document.getElementById('daily-overview').textContent      = '';
+
+    document.querySelectorAll('.daily-card').forEach(card => {
+      card.querySelector('h3').textContent = '';
+      const img = card.querySelector('.daily-icon');
+      if (img) img.removeAttribute('src');
+      card.querySelectorAll('span > span').forEach(s => s.textContent = '');
+    });
+
+    document.querySelectorAll('.hourly-card').forEach(card => {
+      const img = card.querySelector('.hourly-icon');
+      if (img) img.removeAttribute('src');
+      card.querySelectorAll('.hour.temp > span').forEach(s => s.textContent = '');
+    });
+  }
+
+  /* =========================================================
+     NORMALIZATION — daily[0] = today, no past
      ========================================================= */
   function normalizeWeather(raw) {
-    const i = getTodayIndexInWeek();
-
     const allDays = raw.daily.time.map((isoDate, d) => {
       const start = d * 24;
       const hours = raw.hourly.time.slice(start, start + 24).map((isoDateTime, k) => {
@@ -159,8 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     return {
-      week:  allDays.slice(0, 7),        // lundi → dimanche
-      daily: allDays.slice(i, i + 7),    // aujourd'hui → J+6
+      daily: allDays.slice(0, 7),   // today → J+6
       now: {
         temp:     Math.round(raw.current.temperature_2m),
         feels:    Math.round(raw.current.apparent_temperature),
@@ -176,14 +220,12 @@ document.addEventListener('DOMContentLoaded', () => {
      API
      ========================================================= */
   async function fetchWeather(lat, lon, units) {
-    const i = getTodayIndexInWeek();
     const url =
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
       `&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m` +
       `&hourly=temperature_2m,weather_code` +
       `&daily=weather_code,temperature_2m_max,temperature_2m_min` +
       `&timezone=auto` +
-      `&past_days=${i}` +
       `&forecast_days=7` +
       `&temperature_unit=${units.temp}` +
       `&wind_speed_unit=${units.wind}` +
@@ -217,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =========================================================
-     CHARGER UN LIEU
+     LOAD A LOCATION
      ========================================================= */
   async function loadWeatherAt(lat, lon) {
     const [raw, place] = await Promise.all([
@@ -231,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =========================================================
-     INJECTION
+     DOM INJECTION
      ========================================================= */
   function getUnitSymbol(group) {
     const btn = document.querySelector(
@@ -252,7 +294,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('current-country').textContent =
       state.location?.country ? `, ${state.location.country}` : '';
     document.getElementById('date-info').textContent = today.fullDate;
-    document.querySelector('.sun-sun img').src       = `assets/images/${now.icon}`;
+
+    const sunImg = document.querySelector('.sun-sun img');
+    sunImg.src = `assets/images/${now.icon}`;
+    sunImg.alt = altFromIcon(now.icon);
 
     document.getElementById('preview-temperature').textContent = `${now.temp}${tS}`;
     document.getElementById('extra-temperature').textContent   = `${now.feels}${tS}`;
@@ -278,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function findDayByKey(key) {
     if (!state.weather) return null;
-    return state.weather.week.find(d => d.key === key) || null;
+    return state.weather.daily.find(d => d.key === key) || null;
   }
 
   function buildHourlyWindow() {
@@ -338,6 +383,30 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('daily-overview').textContent = day ? day.long : '—';
   }
 
+  /* =========================================================
+     DAY MENU — generated from state.weather.daily (same order as cards)
+     ========================================================= */
+  function renderDayMenu() {
+    if (!state.weather) return;
+    daySelectList.innerHTML = '';
+
+    state.weather.daily.forEach(d => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'day-option' + (d.key === state.selectedDay ? ' selected' : '');
+      btn.dataset.day = d.key;
+      btn.textContent = d.long;
+
+      btn.addEventListener('click', () => {
+        state.selectedDay = d.key;
+        syncDayMenuSelection();
+        renderHourlyOnly();
+      });
+
+      daySelectList.appendChild(btn);
+    });
+  }
+
   function syncDayMenuSelection() {
     document.querySelectorAll('.day-option').forEach(btn => {
       btn.classList.toggle('selected', btn.dataset.day === state.selectedDay);
@@ -349,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
     injectDaily();
     injectDayLabel();
     injectHourly();
-    syncDayMenuSelection();
+    renderDayMenu();
   }
   function renderHourlyOnly() {
     injectDayLabel();
@@ -357,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =========================================================
-     MENUS
+     DROPDOWN MENUS
      ========================================================= */
   const unitsToggleBtn  = document.getElementById('units-toggle-btn');
   const unitsMenu       = document.getElementById('units-menu');
@@ -386,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* =========================================================
-     UNITÉS — re-fetch silencieux
+     UNITS — silent refetch
      ========================================================= */
   function syncUnitsMenu() {
     document.querySelectorAll('.unit-option').forEach(btn => {
@@ -450,18 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* =========================================================
-     JOUR — re-render local, pas de fetch
-     ========================================================= */
-  document.querySelectorAll('.day-option').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.selectedDay = btn.dataset.day;
-      syncDayMenuSelection();
-      renderHourlyOnly();
-    });
-  });
-
-  /* =========================================================
-     RECHERCHE
+     SEARCH
      ========================================================= */
   const searchForm  = document.getElementById('search-form');
   const searchInput = document.getElementById('search-input');
@@ -491,12 +549,17 @@ document.addEventListener('DOMContentLoaded', () => {
       cityListUl.innerHTML = '';
       results.slice(0, 8).forEach(r => {
         const li = document.createElement('li');
-        li.textContent = r.shortName;
-        li.addEventListener('click', async () => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = r.shortName;
+
+        btn.addEventListener('click', async () => {
           cityListBox.hidden = true;
           searchInput.value = r.shortName;
           await runSearch(r.shortName);
         });
+
+        li.appendChild(btn);
         cityListUl.appendChild(li);
       });
 
@@ -525,7 +588,6 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadWeatherAt(r.latitude, r.longitude);
       showState('normal');
 
-      // Historique navigateur : ajout d'une entrée
       history.pushState(
         { lat: r.latitude, lon: r.longitude, city: r.shortName },
         '',
@@ -552,7 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* =========================================================
-     RETRY — relance la dernière action, ou reload
+     RETRY — replay last action, or reload
      ========================================================= */
   document.querySelector('.retry-btn').addEventListener('click', async () => {
     const action = state.lastAction;
@@ -580,19 +642,29 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* =========================================================
-     LOGO → recharger la page
+     LOGO → reload the page
      ========================================================= */
   document.querySelector('.logo-btn').addEventListener('click', () => {
     window.location.reload();
   });
 
   /* =========================================================
-     HISTORIQUE NAVIGATEUR (retour / avant)
+     ALERT CLOSE — dismiss location-denied alert
+     ========================================================= */
+  document.querySelector('.alert-close').addEventListener('click', () => {
+    if (locationAlertTimer) {
+      clearTimeout(locationAlertTimer);
+      locationAlertTimer = null;
+    }
+    showState('normal');
+  });
+
+  /* =========================================================
+     BROWSER HISTORY (back / forward)
      ========================================================= */
   window.addEventListener('popstate', async (event) => {
     const s = event.state;
 
-    // Entrée initiale (avant toute recherche) → on recharge la page
     if (!s || typeof s.lat !== 'number' || typeof s.lon !== 'number') {
       window.location.reload();
       return;
@@ -609,20 +681,40 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* =========================================================
-     DÉMARRAGE
+     STARTUP
      ========================================================= */
   async function startGeoloc() {
+    state.lastAction = { type: 'geoloc' };
+
+    // Step 1 : ask the browser for the user's position.
+    // If it fails, distinguish between "no connection" (network error)
+    // and "permission denied" (location-denied).
+    let pos;
     try {
-      const pos = await new Promise((resolve, reject) =>
+      pos = await new Promise((resolve, reject) =>
         navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true, timeout: 5000,
+          enableHighAccuracy: true,
+          timeout: 15000,
         })
       );
-      state.lastAction = { type: 'geoloc' };
+    } catch (err) {
+      console.warn('Geolocation unavailable:', err);
+      // Offline → network error, not a permission issue.
+      if (!navigator.onLine) {
+        showState('error');
+      } else {
+        showState('location-denied');
+      }
+      return;
+    }
+
+    // Step 2 : fetch the weather for that position.
+    // If this fails, it is always a network / API error.
+    try {
       await loadWeatherAt(pos.coords.latitude, pos.coords.longitude);
       showState('normal');
     } catch (err) {
-      console.warn('Géoloc indisponible:', err);
+      console.error('Weather load failed:', err);
       showState('error');
     }
   }
@@ -630,7 +722,6 @@ document.addEventListener('DOMContentLoaded', () => {
   async function init() {
     syncUnitsMenu();
     state.selectedDay = getTodayKey();
-    syncDayMenuSelection();
     state.lastAction = null;
     updateUnitsAvailability();
     showState('loading');
